@@ -3,53 +3,64 @@
 A homepage that is a shelf of playable mini-games / tech demos. No sales copy.
 The only “about me” lives behind the **?** button in the bottom-right.
 
+## Add a machine (zero config)
+
+1. Create a self-contained `games/<slug>/index.html`.
+2. Push it:
+   ```bash
+   git add . && git commit -m "add <slug>" && git push
+   ```
+
+That's the whole workflow. On push, a GitHub Action scans `games/`, regenerates
+`games.json`, and your machine appears on the shelf automatically.
+
+- **Card title** comes from `game.json` → then `<title>` → then the folder name.
+- **Blurb** comes from `game.json` → then `<meta name="description">`.
+- **Accent + preview animation** are auto-assigned unless you set them (below).
+
+## Customize a machine (optional)
+
+Drop a `games/<slug>/game.json`. Every field is optional:
+
+```json
+{
+  "title": "Snake",
+  "tag": "arcade",
+  "blurb": "One honest line about it.",
+  "accent": "#cde85a",
+  "motif": "orbit",
+  "order": 4
+}
+```
+
+- `motif` = the card's mini preview animation: `constellation` | `orbit` | `ripples`.
+- `accent` = the card's glow color (any hex).
+- `order` = where it sits on the shelf (lower = earlier; unset = alphabetical, after ordered ones).
+
 ## How it works
 
-- `index.html` — the hub (the cabinet). It reads `games.json` and renders one card per machine.
-- `games.json` — the manifest. **This is the only file you edit to add a machine.**
-- `games/<slug>/index.html` — each machine is a self-contained HTML file.
-- Clicking a card opens that machine full-screen in a sandboxed `<iframe>` (its HTML is pulled in live).
+- `index.html` — the hub. Reads `games.json`, renders one card per machine, launches each full-screen in a sandboxed `<iframe>`.
+- `games.json` — **generated automatically. Do not hand-edit — the Action overwrites it.**
+- `scripts/build-manifest.js` — the scanner. Run `node scripts/build-manifest.js` locally to preview the manifest.
+- `.github/workflows/build-manifest.yml` — runs the scanner on every push and commits `games.json`.
 
-## Adding a machine (local folder)
+## Connect a separate repo
 
-1. Drop a self-contained `index.html` at `games/<slug>/index.html`.
-2. Add an entry to `games.json`:
-   ```json
-   { "slug":"my-thing", "title":"My Thing", "tag":"toy", "blurb":"One honest line.", "path":"games/my-thing/", "accent":"#7fb2ff", "motif":"orbit" }
-   ```
-3. Commit. It appears on the shelf.
+Local folders are the simple path. To pull in machines that live in other repos:
 
-`motif` (card preview animation) is one of: `constellation`, `orbit`, `ripples`. Unknown values fall back to constellation.
+- **Submodule** (one site): `git submodule add https://github.com/USER/snake games/snake` — then it's scanned like any folder.
+- **External Pages** (decoupled): add an entry to `extra-machines.json` at the repo root using an absolute `url`:
+  ```json
+  { "machines": [
+    { "slug": "snake", "title": "Snake", "tag": "arcade", "blurb": "…", "url": "https://USER.github.io/snake/", "accent": "#cde85a", "motif": "orbit", "order": 5 }
+  ] }
+  ```
+  These survive every regeneration (the scanner merges them in).
 
-## Connecting a SEPARATE repo (pull its HTML)
+## Local preview
 
-Two supported ways — the manifest accepts either `path` (same site) or `url` (anywhere):
+Open `index.html` directly, or serve the folder: `npx serve` (or any static server).
 
-### A) External GitHub Pages (fully decoupled — easiest)
-Each machine is its own repo with Pages turned on. In `games.json`, use an absolute `url`:
-```json
-{ "slug":"snake", "title":"Snake", "tag":"arcade", "blurb":"…", "url":"https://USER.github.io/snake/", "accent":"#cde85a", "motif":"orbit" }
-```
-The hub iframes that URL. Update the game by pushing to its own repo — the hub needs no changes.
+## Identity
 
-### B) Git submodule (one site, many repos)
-Pull a game repo into this one as a folder:
-```bash
-git submodule add https://github.com/USER/snake games/snake
-git commit -am "add snake machine"
-```
-Then add a normal `path:"games/snake/"` entry. (Use a Pages build that checks out submodules — see below.)
-
-## Recommended GitHub setup
-
-1. **One repo**, e.g. `versatile` (or `arcade`). Public.
-2. **Settings → Pages → Deploy from a branch → `main` / root.** Site goes live at `https://USER.github.io/versatile/`.
-3. Want a real domain? Add a `CNAME` file with e.g. `versatile.dev` and point DNS at GitHub Pages.
-4. Every machine must be a single self-contained `index.html` (no build step) so it works both standalone and embedded.
-
-### Auto-discovery (optional upgrade)
-Tag each machine repo with the GitHub topic `versatile-machine`. A scheduled GitHub Action in this repo queries the API for repos with that topic and regenerates `games.json` automatically — then “connecting a repo” is just adding the topic. (Ask me to scaffold the Action when you want it.)
-
-## Notes
-- Everything is vanilla HTML/CSS/JS — no frameworks, no dependencies, works offline.
-- Identity facts: brand **Versatile**; legal **Cash M Services LLC**; contact **cashmservices@gmail.com**; **Remote, U.S.**
+Versatile · cashmservices@gmail.com · Remote, U.S. · legal: Cash M Services LLC

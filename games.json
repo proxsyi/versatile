@@ -1,4 +1,5 @@
 {
+  "generated": "2026-06-06T23:20:23.540Z",
   "machines": [
     {
       "slug": "constellation",
@@ -8,7 +9,7 @@
       "path": "games/constellation/",
       "accent": "#e7b84b",
       "motif": "constellation",
-      "year": "2026"
+      "order": 1
     },
     {
       "slug": "orbit",
@@ -18,17 +19,17 @@
       "path": "games/orbit/",
       "accent": "#7fb2ff",
       "motif": "orbit",
-      "year": "2026"
+      "order": 2
     },
     {
       "slug": "ripples",
       "title": "Ripples",
       "tag": "toy · sound",
-      "blurb": "Tap the dark and it answers — rings spread out and ring a note. The higher you tap, the higher it sings.",
+      "blurb": "Tap the dark and it answers — rings spread out and ring a note. Higher up sings higher.",
       "path": "games/ripples/",
       "accent": "#6fd6c4",
       "motif": "ripples",
-      "year": "2026"
+      "order": 3
     }
   ]
 }
