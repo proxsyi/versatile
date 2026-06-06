@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Ripples — a tap-to-sing toy by Versatile.">
+<title>Ripples — Versatile</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#05080a;--ink:#ece8dc;--muted:#8b8e87;--accent:#6fd6c4;--mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent}
+#c{position:fixed;inset:0;display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+.ui{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(14px,3vw,26px)}
+.mark{display:flex;align-items:center;gap:9px;letter-spacing:.32em;text-transform:uppercase;font-size:12px}
+.mark .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.hint{font-size:12px;letter-spacing:.03em;color:var(--muted);line-height:1.8;max-width:46ch;transition:opacity .7s}
+.hint b{color:var(--ink)}
+body.go .hint{opacity:0}
+@media(prefers-reduced-motion:reduce){.mark .dot{box-shadow:none}}
+</style>
+</head>
+<body>
+<canvas id="c" role="img" aria-label="Tap anywhere to send out a ripple of light and sound."></canvas>
+<div class="ui">
+  <div class="mark"><span class="dot"></span>Ripples</div>
+  <p class="hint"><b>Tap or drag</b> across the dark. It rings back — higher up sings higher.</p>
+</div>
+<script>
+(function(){
+  var cvs=document.getElementById('c'),ctx=cvs.getContext('2d');
+  var DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0;
+  function resize(){W=cvs.clientWidth;H=cvs.clientHeight;cvs.width=Math.floor(W*DPR);cvs.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);}
+  window.addEventListener('resize',resize);resize();
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var PAL=['#6fd6c4','#7fb2ff','#e7b84b','#b79cff','#ff8a6b'];
+  var rings=[],ci=0,last=0;
+  function rand(a,b){return a+Math.random()*(b-a);}
+  var AC=null,master=null;
+  function audio(){if(AC)return;try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AC=new C();master=AC.createGain();master.gain.value=0.16;master.connect(AC.destination);}catch(e){AC=null;}if(AC&&AC.state==='suspended')AC.resume();}
+  var SCALE=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25,783.99,880.0];
+  function tone(y){if(!AC)return;var idx=Math.max(0,Math.min(SCALE.length-1,Math.floor((1-y/H)*(SCALE.length-1))));var f=SCALE[idx];var t=AC.currentTime;var o=AC.createOscillator(),g=AC.createGain(),lp=AC.createBiquadFilter();o.type='sine';o.frequency.value=f;lp.type='lowpass';lp.frequency.value=2200;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.9,t+0.005);g.gain.exponentialRampToValueAtTime(0.0008,t+0.9);o.connect(lp);lp.connect(g);g.connect(master);o.start(t);o.stop(t+0.95);}
+  function ripple(x,y){var c=PAL[ci++%PAL.length];rings.push({x:x,y:y,r:2,max:rand(120,260),col:c});document.body.classList.add('go');tone(y);}
+  cvs.addEventListener('pointerdown',function(e){audio();ripple(e.clientX,e.clientY);last=performance.now();if(cvs.setPointerCapture){try{cvs.setPointerCapture(e.pointerId);}catch(err){}}});
+  cvs.addEventListener('pointermove',function(e){if(e.buttons){var n=performance.now();if(n-last>110){ripple(e.clientX,e.clientY);last=n;}}});
+  function frame(){
+    if(reduce){ctx.clearRect(0,0,W,H);}else{ctx.fillStyle='rgba(5,8,10,0.16)';ctx.fillRect(0,0,W,H);}
+    for(var i=rings.length-1;i>=0;i--){var rg=rings[i];rg.r+=reduce?6:2.6;var p=rg.r/rg.max;if(p>=1){rings.splice(i,1);continue;}var al=(1-p)*0.85;ctx.strokeStyle=rg.col;ctx.globalAlpha=al;ctx.lineWidth=2;ctx.beginPath();ctx.arc(rg.x,rg.y,rg.r,0,6.283);ctx.stroke();ctx.globalAlpha=al*0.5;ctx.beginPath();ctx.arc(rg.x,rg.y,rg.r*0.6,0,6.283);ctx.stroke();ctx.globalAlpha=1;}
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

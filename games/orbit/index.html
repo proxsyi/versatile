@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Orbit — a tiny gravity sandbox by Versatile.">
+<title>Orbit — Versatile</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06070b;--ink:#ece8dc;--muted:#8b8e97;--accent:#7fb2ff;--mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent}
+#c{position:fixed;inset:0;display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+.ui{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(14px,3vw,26px)}
+.mark{display:flex;align-items:center;gap:9px;letter-spacing:.32em;text-transform:uppercase;font-size:12px}
+.mark .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.hint{font-size:12px;letter-spacing:.03em;color:var(--muted);line-height:1.8;max-width:46ch;transition:opacity .7s}
+.hint b{color:var(--ink)}
+.hint kbd{border:1px solid rgba(236,232,220,.16);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--ink)}
+body.go .hint{opacity:0}
+@media(prefers-reduced-motion:reduce){.mark .dot{box-shadow:none}}
+</style>
+</head>
+<body>
+<canvas id="c" role="img" aria-label="A gravity sandbox. Drag and release to slingshot a body into orbit around the star."></canvas>
+<div class="ui">
+  <div class="mark"><span class="dot"></span>Orbit</div>
+  <p class="hint"><b>Drag</b> anywhere and release to slingshot a world. <b>Tap</b> for a quick one. Press <kbd>C</kbd> to clear.</p>
+</div>
+<script>
+(function(){
+  var cvs=document.getElementById('c'),ctx=cvs.getContext('2d');
+  var DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0,cx=0,cy=0;
+  function resize(){W=cvs.clientWidth;H=cvs.clientHeight;cvs.width=Math.floor(W*DPR);cvs.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);cx=W/2;cy=H/2;}
+  window.addEventListener('resize',resize);resize();
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var PAL=['#7fb2ff','#e7b84b','#6fd6c4','#ff8a6b','#b79cff','#cde85a'];
+  var bodies=[],MAX=140,G=900;
+  var aiming=false,dx0=0,dy0=0,mx=0,my=0,ci=0;
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function add(x,y,vx,vy){if(bodies.length>=MAX)bodies.shift();bodies.push({x:x,y:y,vx:vx,vy:vy,col:PAL[ci++%PAL.length],r:rand(1.8,3.4)});document.body.classList.add('go');}
+  cvs.addEventListener('pointerdown',function(e){aiming=true;dx0=e.clientX;dy0=e.clientY;mx=e.clientX;my=e.clientY;if(cvs.setPointerCapture){try{cvs.setPointerCapture(e.pointerId);}catch(err){}}});
+  cvs.addEventListener('pointermove',function(e){mx=e.clientX;my=e.clientY;});
+  window.addEventListener('pointerup',function(e){if(!aiming)return;aiming=false;var ex=mx,ey=my;var vx=(dx0-ex)*0.045,vy=(dy0-ey)*0.045;var sp=Math.sqrt(vx*vx+vy*vy);if(sp<0.6){var ddx=dx0-cx,ddy=dy0-cy,d=Math.sqrt(ddx*ddx+ddy*ddy)||1;vx=-ddy/d*2.4;vy=ddx/d*2.4;}add(dx0,dy0,vx,vy);});
+  window.addEventListener('keydown',function(e){if(e.key==='c'||e.key==='C'){bodies.length=0;}});
+  function frame(){
+    if(reduce){ctx.clearRect(0,0,W,H);}else{ctx.fillStyle='rgba(6,7,11,0.22)';ctx.fillRect(0,0,W,H);}
+    for(var i=bodies.length-1;i>=0;i--){var b=bodies[i];var ddx=cx-b.x,ddy=cy-b.y;var r2=ddx*ddx+ddy*ddy;var r=Math.sqrt(r2);if(r<14)r=14;var a=G/(r*r);b.vx+=a*ddx/r;b.vy+=a*ddy/r;b.x+=b.vx;b.y+=b.vy;if(b.x<-400||b.x>W+400||b.y<-400||b.y>H+400){bodies.splice(i,1);continue;}ctx.save();ctx.shadowBlur=12;ctx.shadowColor=b.col;ctx.fillStyle=b.col;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.283);ctx.fill();ctx.restore();}
+    ctx.save();ctx.shadowBlur=30;ctx.shadowColor='#ffd87a';ctx.fillStyle='#ffd87a';ctx.beginPath();ctx.arc(cx,cy,7,0,6.283);ctx.fill();ctx.restore();
+    if(aiming){ctx.strokeStyle='rgba(127,178,255,0.6)';ctx.lineWidth=1.4;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(dx0,dy0);ctx.lineTo(mx,my);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(127,178,255,0.9)';ctx.beginPath();ctx.arc(dx0,dy0,3.5,0,6.283);ctx.fill();}
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

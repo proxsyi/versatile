@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#07080a">
+<meta name="description" content="Versatile — a cabinet of small machines you can play with.">
+<title>Versatile</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307080a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23d8b25a'/%3E%3C/svg%3E">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07080a;--bg2:#0d0f12;--ink:#ece8dc;--muted:#8b8e87;--faint:#5a5d57;
+  --line:rgba(236,232,220,.13);--line2:rgba(236,232,220,.06);
+  --gold:#d8b25a;--panel:rgba(13,15,17,.92);
+  --mono:ui-monospace,'SF Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace;
+  --serif:Georgia,'Times New Roman',serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --ease:cubic-bezier(.22,.68,.2,1)
+}
+html{scroll-behavior:smooth}
+body{min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;position:relative;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 0%,rgba(216,178,90,.05),transparent 55%),radial-gradient(130% 120% at 50% 60%,transparent 50%,rgba(0,0,0,.5) 100%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.045;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:clamp(22px,4vw,46px) clamp(18px,5vw,52px) 90px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-top:clamp(10px,3vw,30px)}
+.mark{display:flex;align-items:center;gap:11px;font-family:var(--mono);letter-spacing:.36em;text-transform:uppercase;font-size:14px;user-select:none}
+.mark .dot{width:12px;height:12px;border-radius:50%;background:var(--gold);box-shadow:0 0 16px var(--gold);animation:breathe 4s var(--ease) infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.35);opacity:1}}
+.meta{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);text-align:right;line-height:1.7}
+.lede{margin:clamp(40px,9vw,90px) 0 clamp(26px,5vw,46px);max-width:30ch}
+.lede h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,7vw,66px);line-height:1.02;letter-spacing:-.018em}
+.lede h1 em{font-style:italic;color:var(--gold)}
+.lede p{margin-top:18px;font-family:var(--mono);font-size:13px;letter-spacing:.02em;line-height:1.85;color:var(--muted);max-width:42ch}
+.lede p .k{color:var(--ink)}
+/* shelf */
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:clamp(14px,2vw,22px)}
+.machine{--acc:var(--gold);display:flex;flex-direction:column;text-align:left;background:linear-gradient(180deg,var(--bg2),#0a0c0e);border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;color:inherit;font:inherit;overflow:hidden;position:relative;transition:transform .35s var(--ease),border-color .35s,box-shadow .35s}
+.machine:hover,.machine:focus-visible{transform:translateY(-4px);border-color:color-mix(in srgb,var(--acc) 55%,var(--line));box-shadow:0 18px 40px -22px var(--acc)}
+.screen{position:relative;aspect-ratio:16/10;border-radius:10px;background:radial-gradient(120% 120% at 50% 30%,#0e1013,#070809);border:1px solid var(--line2);overflow:hidden;margin-bottom:13px}
+.screen .star{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--acc);box-shadow:0 0 9px var(--acc);animation:tw 3s var(--ease) infinite}
+@keyframes tw{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.3)}}
+.screen .link{position:absolute;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.35;transform-origin:left center}
+.screen .spin{position:absolute;inset:0;animation:spin 7s linear infinite}
+.screen .planet{position:absolute;left:50%;top:50%;margin:-3px 0 0 34px;width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 9px var(--acc)}
+.screen .sun{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;background:#ffd87a;box-shadow:0 0 16px #ffd87a}
+.screen .ringo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid var(--acc);opacity:.3;border-radius:50%;width:80px;height:80px}
+.screen .ring{position:absolute;left:50%;top:50%;width:16px;height:16px;border:1.5px solid var(--acc);border-radius:50%;transform:translate(-50%,-50%) scale(.2);animation:rip 2.8s var(--ease) infinite}
+@keyframes rip{0%{transform:translate(-50%,-50%) scale(.2);opacity:.9}80%{opacity:.06}100%{transform:translate(-50%,-50%) scale(3.6);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.machine .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.machine .title{font-family:var(--serif);font-size:21px;letter-spacing:-.01em}
+.machine .tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.machine .blurb{margin-top:7px;font-size:13px;line-height:1.6;color:var(--muted)}
+.machine .play{margin-top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:7px;transition:color .3s}
+.machine:hover .play,.machine:focus-visible .play{color:var(--acc)}
+.machine .play .tri{width:0;height:0;border-left:7px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent}
+footer{margin-top:54px;display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--faint)}
+/* help button */
+.help{position:fixed;right:clamp(16px,3vw,28px);bottom:clamp(16px,3vw,28px);z-index:8;width:46px;height:46px;border-radius:50%;background:rgba(13,15,17,.7);border:1px solid var(--line);color:var(--muted);font-family:var(--serif);font-size:21px;cursor:pointer;backdrop-filter:none;transition:color .25s,border-color .25s,transform .15s,background .25s}
+.help:hover{color:var(--gold);border-color:var(--gold)}
+.help:active{transform:translateY(1px)}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:rgba(13,15,17,.5);border:1px solid var(--line);border-radius:999px;padding:9px 14px;cursor:pointer;transition:color .25s,border-color .25s,transform .15s}
+.btn:hover{color:var(--ink);border-color:rgba(236,232,220,.34)}
+.btn:active{transform:translateY(1px)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* info dialog */
+.scrim{position:fixed;inset:0;z-index:10;background:rgba(4,5,6,.7);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility .35s;display:flex;align-items:center;justify-content:center;padding:22px}
+.scrim.open{opacity:1;visibility:visible}
+.cardwrap{position:relative;width:min(560px,100%)}
+.card{max-height:86vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(24px,4vw,40px);transform:translateY(14px) scale(.985);opacity:0;transition:transform .4s var(--ease),opacity .4s var(--ease)}
+.scrim.open .card{transform:none;opacity:1}
+.card .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.card h2{font-family:var(--serif);font-weight:400;font-size:clamp(25px,4.4vw,36px);line-height:1.08;letter-spacing:-.01em;margin-bottom:16px}
+.card h2 em{font-style:italic;color:var(--gold)}
+.card p{font-size:15px;line-height:1.72;color:#cfccc1;margin-bottom:14px}
+.card p.small{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:8px}
+.card .rule{height:1px;background:var(--line);margin:22px 0}
+.wild{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 4px}
+.wild span{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+.card a.mail{display:inline-block;font-family:var(--mono);font-size:15px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--gold);padding-bottom:2px;transition:color .25s}
+.card a.mail:hover{color:var(--gold)}
+.card .cmeta{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--faint);margin-top:10px}
+.x{position:absolute;top:12px;right:12px}
+/* player */
+.player{position:fixed;inset:0;z-index:14;background:#000;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .3s var(--ease),visibility .3s}
+.player.open{opacity:1;visibility:visible}
+.pbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px clamp(14px,3vw,24px);background:rgba(8,9,12,.92);border-bottom:1px solid var(--line)}
+.pbar .pt{display:flex;align-items:center;gap:10px;font-family:var(--mono);letter-spacing:.22em;text-transform:uppercase;font-size:12px}
+.pbar .pt .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.pbar .right{display:flex;align-items:center;gap:12px}
+.pbar .esc{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--faint)}
+.player .frame{flex:1;position:relative}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+@media (max-width:600px){.mark{letter-spacing:.22em;font-size:12px}.pbar .esc{display:none}}
+@media (prefers-reduced-motion:reduce){.mark .dot{animation:none}.screen *{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark"><span class="dot"></span>Versatile</div>
+    <div class="meta" id="meta">&nbsp;</div>
+  </header>
+
+  <div class="lede">
+    <h1>Small <em>machines.</em><br>Poke at them.</h1>
+    <p><span class="k">Each one does something on its own.</span> Click in. Make a mess. Leave when you like. The <span class="k">?</span> in the corner is the only place that talks about a person.</p>
+  </div>
+
+  <main class="shelf" id="shelf" aria-label="Playable machines"></main>
+
+  <footer>
+    <span>Versatile — a workbench, not a store</span>
+    <span id="foot">&nbsp;</span>
+  </footer>
+</div>
+
+<button class="help" id="help" title="Who made this?" aria-haspopup="dialog">?<span class="sr">Who made this?</span></button>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="abTitle" aria-hidden="true">
+  <div class="cardwrap">
+    <button class="btn x" id="closeX" title="Close">✕<span class="sr">Close</span></button>
+    <div class="card">
+      <div class="eyebrow">the human bit</div>
+      <h2 id="abTitle">Hi — I'm Cash. I build <em>Versatile.</em></h2>
+      <p>Versatile makes small, sturdy software for small businesses — the management platforms, web apps, and quiet automations that keep a place running. One person scopes it, builds it, hosts it, and keeps it alive. That person is me.</p>
+      <p>This site isn't a pitch. It's a shelf of little machines I've made for the fun of it. If one of them makes you think “I wonder if he could build…” — yes, probably. Say hello.</p>
+      <div class="rule"></div>
+      <p class="small">Quietly running in the wild:</p>
+      <div class="wild"><span>Greenfield Farm</span><span>Pure Perfection Glass</span><span>Triple C Insurance</span></div>
+      <div class="rule"></div>
+      <p class="small">Start something:</p>
+      <a class="mail" href="mailto:cashmservices@gmail.com">cashmservices@gmail.com</a>
+      <div class="cmeta">Versatile &middot; Cash M Services LLC &middot; Remote, U.S.</div>
+    </div>
+  </div>
+</div>
+
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Now playing">
+  <div class="pbar">
+    <div class="pt"><span class="dot" id="pdot"></span><span id="ptitle">—</span></div>
+    <div class="right"><span class="esc">Esc to close</span><button class="btn" id="pclose">Close</button></div>
+  </div>
+  <div class="frame"><iframe id="pframe" title="Playable machine" allow="autoplay" sandbox="allow-scripts allow-pointer-lock allow-same-origin"></iframe></div>
+</div>
+
+<script>
+(function(){
+  // Fallback manifest so the site works even when opened directly (file://).
+  // The live site loads games.json instead, so adding a machine = one folder + one entry.
+  var DEFAULT={machines:[
+    {slug:'constellation',title:'Constellation',tag:'toy · sound',blurb:'Plant points of light. Watch them drift, find each other, and wire themselves together.',path:'games/constellation/',accent:'#e7b84b',motif:'constellation',year:'2026'},
+    {slug:'orbit',title:'Orbit',tag:'sandbox',blurb:'Slingshot little worlds around a star and watch them fall into orbit. Pure gravity, no rules.',path:'games/orbit/',accent:'#7fb2ff',motif:'orbit',year:'2026'},
+    {slug:'ripples',title:'Ripples',tag:'toy · sound',blurb:'Tap the dark and it answers — rings spread out and ring a note. Higher up sings higher.',path:'games/ripples/',accent:'#6fd6c4',motif:'ripples',year:'2026'}
+  ]};
+
+  var shelf=document.getElementById('shelf'),metaEl=document.getElementById('meta'),footEl=document.getElementById('foot');
+
+  function motifHTML(kind){
+    if(kind==='orbit'){return '<div class="ringo"></div><div class="sun"></div><div class="spin"><div class="planet"></div></div>';}
+    if(kind==='ripples'){var s='';[0,.9,1.8].forEach(function(d){s+='<div class="ring" style="animation-delay:'+d+'s"></div>';});return s;}
+    // constellation (default)
+    var pts=[[22,30],[40,62],[64,38],[78,70],[52,24],[33,78],[70,18]];var h='';
+    pts.forEach(function(p,i){h+='<div class="star" style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:'+(i*0.34)+'s"></div>';});
+    h+='<div class="link" style="left:22%;top:30%;width:30%;transform:rotate(40deg)"></div>';
+    h+='<div class="link" style="left:52%;top:24%;width:26%;transform:rotate(36deg)"></div>';
+    return h;
+  }
+
+  function render(list){
+    shelf.innerHTML='';
+    list.forEach(function(g){
+      var b=document.createElement('button');
+      b.className='machine';b.style.setProperty('--acc',g.accent||'#d8b25a');
+      b.setAttribute('aria-label','Play '+g.title);
+      b.innerHTML='<div class="screen '+(g.motif||'')+'">'+motifHTML(g.motif)+'</div>'+
+        '<div class="row"><span class="title">'+g.title+'</span><span class="tag">'+(g.tag||'')+'</span></div>'+
+        '<p class="blurb">'+(g.blurb||'')+'</p>'+
+        '<span class="play"><span class="tri"></span>Play</span>';
+      b.addEventListener('click',function(){openPlayer(g);});
+      shelf.appendChild(b);
+    });
+    metaEl.innerHTML=list.length+' machine'+(list.length===1?'':'s')+'<br>est. 2026';
+    footEl.textContent=list.length+' on the shelf · more coming';
+  }
+
+  // Prefer the live manifest; fall back to the embedded one.
+  function boot(){
+    try{
+      fetch('games.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+        render(j&&j.machines&&j.machines.length?j.machines:DEFAULT.machines);
+      }).catch(function(){render(DEFAULT.machines);});
+    }catch(e){render(DEFAULT.machines);}
+  }
+  boot();
+
+  // player
+  var player=document.getElementById('player'),pframe=document.getElementById('pframe'),ptitle=document.getElementById('ptitle'),pdot=document.getElementById('pdot');
+  var lastFocus=null;
+  function openPlayer(g){lastFocus=document.activeElement;ptitle.textContent=g.title;pdot.style.background=g.accent||'#d8b25a';pdot.style.boxShadow='0 0 12px '+(g.accent||'#d8b25a');pframe.src=(g.url||g.path);player.classList.add('open');document.body.style.overflow='hidden';document.getElementById('pclose').focus();}
+  function closePlayer(){player.classList.remove('open');pframe.src='about:blank';document.body.style.overflow='';if(lastFocus&&lastFocus.focus)lastFocus.focus();}
+  document.getElementById('pclose').addEventListener('click',closePlayer);
+
+  // info
+  var scrim=document.getElementById('scrim'),closeX=document.getElementById('closeX');
+  function openInfo(){scrim.classList.add('open');scrim.setAttribute('aria-hidden','false');closeX.focus();}
+  function closeInfo(){scrim.classList.remove('open');scrim.setAttribute('aria-hidden','true');}
+  document.getElementById('help').addEventListener('click',openInfo);
+  closeX.addEventListener('click',closeInfo);
+  scrim.addEventListener('click',function(e){if(e.target===scrim)closeInfo();});
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){if(player.classList.contains('open'))closePlayer();else if(scrim.classList.contains('open'))closeInfo();}
+    if(e.key==='?'&&!player.classList.contains('open')){openInfo();}
+  });
+})();
+</script>
+</body>
+</html>

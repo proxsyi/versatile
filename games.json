@@ -1,0 +1,34 @@
+{
+  "machines": [
+    {
+      "slug": "constellation",
+      "title": "Constellation",
+      "tag": "toy · sound",
+      "blurb": "Plant points of light. Watch them drift, find each other, and wire themselves together.",
+      "path": "games/constellation/",
+      "accent": "#e7b84b",
+      "motif": "constellation",
+      "year": "2026"
+    },
+    {
+      "slug": "orbit",
+      "title": "Orbit",
+      "tag": "sandbox",
+      "blurb": "Slingshot little worlds around a star and watch them fall into orbit. Pure gravity, no rules.",
+      "path": "games/orbit/",
+      "accent": "#7fb2ff",
+      "motif": "orbit",
+      "year": "2026"
+    },
+    {
+      "slug": "ripples",
+      "title": "Ripples",
+      "tag": "toy · sound",
+      "blurb": "Tap the dark and it answers — rings spread out and ring a note. The higher you tap, the higher it sings.",
+      "path": "games/ripples/",
+      "accent": "#6fd6c4",
+      "motif": "ripples",
+      "year": "2026"
+    }
+  ]
+}
