@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-07T02:13:56.056Z",
+  "generated": "2026-06-07T02:26:12.446Z",
   "machines": [
     {
       "slug": "constellation",
@@ -45,7 +45,7 @@
       "slug": "embers",
       "title": "Embers",
       "tag": "toy · photo",
-      "blurb": "Drop in any photo. It snaps an outline to the real edges — or draw your own — then a storm of embers swarms in to draw it in fire. Toggle rain.",
+      "blurb": "Drop in a photo. Auto-trace, click, and draw an outline that snaps to real edges — all tools stack, undo with ⌘Z. Ignite a storm of embers, or turn on rain to paint the outline as drops strike it.",
       "path": "games/embers/",
       "accent": "#ff5a36",
       "order": 5
