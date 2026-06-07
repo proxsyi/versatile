@@ -1,11 +1,11 @@
 {
-  "generated": "2026-06-07T02:13:56.056Z",
+  "generated": "2026-06-07T02:45:49.575Z",
   "machines": [
     {
       "slug": "constellation",
       "title": "Constellation",
-      "tag": "toy · sound",
-      "blurb": "Plant points of light. Watch them drift, find each other, and wire themselves together.",
+      "tag": "game",
+      "blurb": "Connect the numbered stars in order to trace each constellation. Finish a sky and the next one grows by a star — how far can you reach?",
       "path": "games/constellation/",
       "accent": "#e7b84b",
       "motif": "constellation",
@@ -14,8 +14,8 @@
     {
       "slug": "orbit",
       "title": "Orbit",
-      "tag": "sandbox",
-      "blurb": "Slingshot little worlds around a star and watch them fall into orbit. Pure gravity, no rules.",
+      "tag": "game",
+      "blurb": "Slingshot worlds around a star and keep them looping in stable orbits. Capture three at once to complete a whole solar system.",
       "path": "games/orbit/",
       "accent": "#7fb2ff",
       "motif": "orbit",
@@ -23,9 +23,9 @@
     },
     {
       "slug": "ripples",
-      "title": "Ripples",
-      "tag": "toy · sound",
-      "blurb": "Tap the dark and it answers — rings spread out and ring a note. Higher up sings higher.",
+      "title": "Echo",
+      "tag": "game",
+      "blurb": "Watch the lights sing a melody, then echo it back in order. Each round adds a note — how long a memory can you hold?",
       "path": "games/ripples/",
       "accent": "#6fd6c4",
       "motif": "ripples",
@@ -44,11 +44,22 @@
     {
       "slug": "embers",
       "title": "Embers",
-      "tag": "toy · photo",
-      "blurb": "Drop in any photo. It snaps an outline to the real edges — or draw your own — then a storm of embers swarms in to draw it in fire. Toggle rain.",
+      "tag": "draw",
+      "blurb": "A drawing canvas made of living embers. Sketch with light, or drop in a photo to trace its edges. Your work saves itself on this device — come back and keep going.",
       "path": "games/embers/",
       "accent": "#ff5a36",
+      "motif": "embers",
       "order": 5
+    },
+    {
+      "slug": "wisp",
+      "title": "Wisp",
+      "tag": "game",
+      "blurb": "You are a spark of light in a dark maze that only your glow reveals. Feel your way to the ember — each maze you solve, the next grows larger.",
+      "path": "games/wisp/",
+      "accent": "#90e0c0",
+      "motif": "maze",
+      "order": 6
     }
   ]
 }

@@ -4,54 +4,99 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Orbit — a tiny gravity sandbox by Versatile.">
 <title>Orbit — Versatile</title>
+<meta name="description" content="Slingshot worlds into stable orbits. Capture three at once to complete a system.">
+<meta name="versatile:tag" content="game">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2306070b'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%237fb2ff'/%3E%3C/svg%3E">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#06070b;--ink:#ece8dc;--muted:#8b8e97;--accent:#7fb2ff;--mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent}
-#c{position:fixed;inset:0;display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
-.ui{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(14px,3vw,26px)}
-.mark{display:flex;align-items:center;gap:9px;letter-spacing:.32em;text-transform:uppercase;font-size:12px}
-.mark .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
-.hint{font-size:12px;letter-spacing:.03em;color:var(--muted);line-height:1.8;max-width:46ch;transition:opacity .7s}
-.hint b{color:var(--ink)}
-.hint kbd{border:1px solid rgba(236,232,220,.16);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--ink)}
-body.go .hint{opacity:0}
-@media(prefers-reduced-motion:reduce){.mark .dot{box-shadow:none}}
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#06070b;--ink:#ece8dc;--muted:#8b8e97;--accent:#7fb2ff;--gold:#ffd479;--line:rgba(236,232,220,.16)}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent}
+  #c{position:fixed;inset:0;display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+  .hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:14px clamp(14px,3vw,26px);pointer-events:none;z-index:4}
+  .mark{display:flex;align-items:center;gap:9px;letter-spacing:.28em;text-transform:uppercase;font-size:12px}
+  .mark .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  .stat{text-align:right;font-size:12px;color:var(--muted);line-height:1.7}
+  .stat b{color:var(--ink)}
+  .goal{position:fixed;left:50%;top:54px;transform:translateX(-50%);font-size:12.5px;color:var(--muted);text-align:center;z-index:4;pointer-events:none;max-width:90vw}
+  .banner{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(20px,5vw,32px);color:var(--gold);text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;z-index:5;text-shadow:0 0 24px rgba(255,212,121,.5)}
+  .banner.on{opacity:1}
+  .tools{position:fixed;right:14px;bottom:16px;display:flex;gap:8px;z-index:6}
+  button{font:inherit;font-size:12.5px;color:var(--ink);background:rgba(20,21,25,.86);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
 </style>
 </head>
 <body>
-<canvas id="c" role="img" aria-label="A gravity sandbox. Drag and release to slingshot a body into orbit around the star."></canvas>
-<div class="ui">
-  <div class="mark"><span class="dot"></span>Orbit</div>
-  <p class="hint"><b>Drag</b> anywhere and release to slingshot a world. <b>Tap</b> for a quick one. Press <kbd>C</kbd> to clear.</p>
-</div>
+<canvas id="c" role="img" aria-label="Drag and release to slingshot a world. Keep it orbiting the star for one full loop to capture it."></canvas>
+<div class="hud"><div class="mark"><span class="dot"></span>Orbit</div><div class="stat">captured <b id="cap">0</b>/3<br>systems <b id="sys">0</b> · best <b id="best">0</b></div></div>
+<div class="goal" id="goal">Drag from empty space &amp; release to fling a world · capture 3 stable orbits</div>
+<div class="banner" id="banner"></div>
+<div class="tools"><button id="resetb">New system</button></div>
 <script>
 (function(){
-  var cvs=document.getElementById('c'),ctx=cvs.getContext('2d');
-  var DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0,cx=0,cy=0;
-  function resize(){W=cvs.clientWidth;H=cvs.clientHeight;cvs.width=Math.floor(W*DPR);cvs.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);cx=W/2;cy=H/2;}
-  window.addEventListener('resize',resize);resize();
-  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var PAL=['#7fb2ff','#e7b84b','#6fd6c4','#ff8a6b','#b79cff','#cde85a'];
-  var bodies=[],MAX=140,G=900;
-  var aiming=false,dx0=0,dy0=0,mx=0,my=0,ci=0;
-  function rand(a,b){return a+Math.random()*(b-a);}
-  function add(x,y,vx,vy){if(bodies.length>=MAX)bodies.shift();bodies.push({x:x,y:y,vx:vx,vy:vy,col:PAL[ci++%PAL.length],r:rand(1.8,3.4)});document.body.classList.add('go');}
-  cvs.addEventListener('pointerdown',function(e){aiming=true;dx0=e.clientX;dy0=e.clientY;mx=e.clientX;my=e.clientY;if(cvs.setPointerCapture){try{cvs.setPointerCapture(e.pointerId);}catch(err){}}});
-  cvs.addEventListener('pointermove',function(e){mx=e.clientX;my=e.clientY;});
-  window.addEventListener('pointerup',function(e){if(!aiming)return;aiming=false;var ex=mx,ey=my;var vx=(dx0-ex)*0.045,vy=(dy0-ey)*0.045;var sp=Math.sqrt(vx*vx+vy*vy);if(sp<0.6){var ddx=dx0-cx,ddy=dy0-cy,d=Math.sqrt(ddx*ddx+ddy*ddy)||1;vx=-ddy/d*2.4;vy=ddx/d*2.4;}add(dx0,dy0,vx,vy);});
-  window.addEventListener('keydown',function(e){if(e.key==='c'||e.key==='C'){bodies.length=0;}});
-  function frame(){
-    if(reduce){ctx.clearRect(0,0,W,H);}else{ctx.fillStyle='rgba(6,7,11,0.22)';ctx.fillRect(0,0,W,H);}
-    for(var i=bodies.length-1;i>=0;i--){var b=bodies[i];var ddx=cx-b.x,ddy=cy-b.y;var r2=ddx*ddx+ddy*ddy;var r=Math.sqrt(r2);if(r<14)r=14;var a=G/(r*r);b.vx+=a*ddx/r;b.vy+=a*ddy/r;b.x+=b.vx;b.y+=b.vy;if(b.x<-400||b.x>W+400||b.y<-400||b.y>H+400){bodies.splice(i,1);continue;}ctx.save();ctx.shadowBlur=12;ctx.shadowColor=b.col;ctx.fillStyle=b.col;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.283);ctx.fill();ctx.restore();}
-    ctx.save();ctx.shadowBlur=30;ctx.shadowColor='#ffd87a';ctx.fillStyle='#ffd87a';ctx.beginPath();ctx.arc(cx,cy,7,0,6.283);ctx.fill();ctx.restore();
-    if(aiming){ctx.strokeStyle='rgba(127,178,255,0.6)';ctx.lineWidth=1.4;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(dx0,dy0);ctx.lineTo(mx,my);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(127,178,255,0.9)';ctx.beginPath();ctx.arc(dx0,dy0,3.5,0,6.283);ctx.fill();}
+  var cv=document.getElementById('c'),ctx=cv.getContext('2d');
+  var W=0,H=0,DPR=Math.min(2,window.devicePixelRatio||1);
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var capEl=document.getElementById('cap'),sysEl=document.getElementById('sys'),bestEl=document.getElementById('best'),bannerEl=document.getElementById('banner'),goalEl=document.getElementById('goal');
+  var cx=0,cy=0,starR=18,M=2600,G=1;
+  var bodies=[],stars=[],captured=0,systems=0,best=0,roundDone=false;
+  try{best=parseInt(localStorage.getItem('versatile:orbit:best'))||0;}catch(e){}
+  bestEl.textContent=best;
+  function resize(){ W=cv.clientWidth||innerWidth;H=cv.clientHeight||innerHeight;cv.width=W*DPR|0;cv.height=H*DPR|0;ctx.setTransform(DPR,0,0,DPR,0,0);cx=W/2;cy=H/2; }
+  window.addEventListener('resize',resize);
+  function makeStars(){ stars=[]; for(var i=0;i<70;i++) stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.1+0.3,p:Math.random()*6.28}); }
+  function newSystem(){ bodies=[];captured=0;roundDone=false;capEl.textContent='0'; M=2300+Math.random()*1600; bannerEl.classList.remove('on');goalEl.style.opacity='1'; }
+  var AC=null; function tone(f,dur,vol){ try{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); var o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime; o.frequency.value=f;o.type='sine'; g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.4)); o.connect(g);g.connect(AC.destination);o.start();o.stop(t+(dur||0.4)+0.05);}catch(e){} }
+  var puffs=[];
+  function puff(x,y,col){ for(var i=0;i<14;i++){var a=Math.random()*6.28,s=1+Math.random()*3;puffs.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0,max:500,col:col||'#9fbcff'});} }
+  function launch(x,y,vx,vy){ bodies.push({x:x,y:y,vx:vx,vy:vy,acc:0,prevA:Math.atan2(y-cy,x-cx),captured:false,trail:[],hue:200+Math.random()*40}); }
+  var aiming=false,sx=0,sy=0,mx=0,my=0;
+  function onDown(e){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e2){}} var r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top; var dx=x-cx,dy=y-cy; if(Math.sqrt(dx*dx+dy*dy)<starR+10)return; aiming=true;sx=mx=x;sy=my=y; }
+  function onMove(e){ if(!aiming)return; var r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top; }
+  function onUp(){ if(!aiming)return; aiming=false; var dx=sx-mx,dy=sy-my,len=Math.sqrt(dx*dx+dy*dy); if(len<6)return; var k=0.06; launch(sx,sy,dx*k,dy*k); }
+  cv.addEventListener('pointerdown',onDown); cv.addEventListener('pointermove',onMove); cv.addEventListener('pointerup',onUp); cv.addEventListener('pointercancel',function(){aiming=false;});
+  document.getElementById('resetb').addEventListener('click',newSystem);
+  function step(dt){ var i,j; var escapeR=Math.max(W,H)*0.62+200;
+    for(i=bodies.length-1;i>=0;i--){ var b=bodies[i]; var dx=cx-b.x,dy=cy-b.y,r2=dx*dx+dy*dy,r=Math.sqrt(r2); var a=G*M/Math.max(r2,400); b.vx+=a*dx/r*dt; b.vy+=a*dy/r*dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
+      b.trail.push(b.x,b.y); if(b.trail.length>120)b.trail.splice(0,2);
+      if(!b.captured){ var ang=Math.atan2(b.y-cy,b.x-cx),da=ang-b.prevA; if(da>Math.PI)da-=6.2832; if(da<-Math.PI)da+=6.2832; b.acc+=da; b.prevA=ang;
+        if(r<starR+5){ puff(b.x,b.y,'#ff8a6b');tone(150,0.3,0.18);bodies.splice(i,1);continue; }
+        if(r>escapeR){ bodies.splice(i,1);continue; }
+        if(Math.abs(b.acc)>=6.2832){ b.captured=true;captured++;capEl.textContent=captured;tone(520+captured*120,0.5,0.22);puff(b.x,b.y,'#ffd479'); if(captured>=3&&!roundDone){ roundDone=true;systems++;sysEl.textContent=systems; if(systems>best){best=systems;bestEl.textContent=best;try{localStorage.setItem('versatile:orbit:best',best);}catch(e){}} bannerEl.textContent='System complete!';bannerEl.classList.add('on');goalEl.style.opacity='0'; setTimeout(newSystem,2000);} }
+      }
+    }
+    for(i=puffs.length-1;i>=0;i--){ var pf=puffs[i];pf.life+=dt*16.67;if(pf.life>pf.max){puffs.splice(i,1);continue;} pf.x+=pf.vx*dt;pf.y+=pf.vy*dt;pf.vx*=0.96;pf.vy*=0.96; }
+  }
+  var last=performance.now();
+  function frame(t){ var dt=Math.min(2,(t-last)/16.67);last=t; if(!reduce)step(dt);
+    ctx.fillStyle='#06070b';ctx.fillRect(0,0,W,H); var i;
+    for(i=0;i<stars.length;i++){var s=stars[i];ctx.globalAlpha=0.25+0.3*Math.sin(t*0.001+s.p);ctx.fillStyle='#aeb6cc';ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,6.2832);ctx.fill();}
+    ctx.globalAlpha=1;
+    var pulse=1+0.06*Math.sin(t*0.004); ctx.fillStyle='#fff4d6'; if(!reduce){ctx.shadowColor='#ffd479';ctx.shadowBlur=30;} ctx.beginPath();ctx.arc(cx,cy,starR*pulse,0,6.2832);ctx.fill();ctx.shadowBlur=0;
+    for(i=0;i<bodies.length;i++){ var b=bodies[i],col=b.captured?'#ffd479':('hsl('+b.hue+',70%,70%)');
+      ctx.strokeStyle=b.captured?'rgba(255,212,121,.35)':'rgba(159,188,255,.3)';ctx.lineWidth=1.5;ctx.beginPath(); for(var k=0;k<b.trail.length;k+=2){ if(k===0)ctx.moveTo(b.trail[k],b.trail[k+1]); else ctx.lineTo(b.trail[k],b.trail[k+1]);} ctx.stroke();
+      ctx.fillStyle=col; if(!reduce&&b.captured){ctx.shadowColor='#ffd479';ctx.shadowBlur=14;} ctx.beginPath();ctx.arc(b.x,b.y,5,0,6.2832);ctx.fill();ctx.shadowBlur=0; }
+    for(i=0;i<puffs.length;i++){ var pf=puffs[i],la=1-pf.life/pf.max;ctx.globalAlpha=la;ctx.fillStyle=pf.col;ctx.beginPath();ctx.arc(pf.x,pf.y,2*la+0.5,0,6.2832);ctx.fill(); }
+    ctx.globalAlpha=1;
+    if(aiming){ ctx.strokeStyle='rgba(127,178,255,.8)';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(mx,my);ctx.stroke();ctx.setLineDash([]); var ax=sx+(sx-mx),ay=sy+(sy-my); ctx.strokeStyle='rgba(255,212,121,.9)';ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ax,ay);ctx.stroke(); ctx.fillStyle='#ffd479';ctx.beginPath();ctx.arc(sx,sy,5,0,6.2832);ctx.fill(); }
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  resize();makeStars();newSystem();requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(function(){ var SLUG='orbit',TITLE='Orbit',ACC='#7fb2ff';
+  var LINES=['Drag from empty space and release to slingshot a world — pull back to fling it forward.','Keep a world looping the star for one full orbit to capture it. Capture three to complete the system.'];
+  try{ if(localStorage.getItem('versatile:intro:'+SLUG)) return; }catch(e){}
+  var wrap=document.createElement('div'); wrap.setAttribute('role','dialog'); wrap.setAttribute('aria-modal','true'); wrap.setAttribute('aria-label','About '+TITLE);
+  wrap.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,6,8,.66);backdrop-filter:blur(3px)';
+  var card=document.createElement('div'); card.style.cssText='max-width:360px;width:100%;background:rgba(15,16,20,.97);border:1px solid rgba(236,232,220,.16);border-radius:16px;padding:20px 22px;box-shadow:0 24px 70px rgba(0,0,0,.6);color:#ece8dc;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+  card.innerHTML='<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><span style="width:10px;height:10px;border-radius:50%;background:'+ACC+';box-shadow:0 0 10px '+ACC+'"></span><b style="font-size:16px">'+TITLE+'</b></div>'+LINES.map(function(l){return '<p style="margin:6px 0;color:#c7c3b8">'+l+'</p>';}).join('')+'<div style="margin-top:14px;font-size:12px;color:#8b8e87">Tap anywhere to start</div>';
+  card.addEventListener('click',function(e){e.stopPropagation();}); wrap.appendChild(card);
+  function close(){ try{localStorage.setItem('versatile:intro:'+SLUG,'1');}catch(e){} if(wrap.parentNode)wrap.parentNode.removeChild(wrap); }
+  wrap.addEventListener('click',close); document.addEventListener('keydown',function k(e){ if(e.key==='Escape'){close();document.removeEventListener('keydown',k);} });
+  (document.body||document.documentElement).appendChild(wrap);
 })();
 </script>
 </body>
