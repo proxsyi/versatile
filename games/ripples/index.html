@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Echo — Versatile</title>
 <meta name="description" content="Watch the lights sing, then echo them back. Each round the melody grows by one.">
@@ -12,7 +12,7 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--bg:#05080a;--ink:#ece8dc;--muted:#8b8e87;--accent:#6fd6c4;--line:rgba(236,232,220,.16)}
   html,body{height:100%}
-  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   #c{position:fixed;inset:0;display:block;width:100%;height:100%;cursor:pointer;touch-action:none}
   .hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:14px clamp(14px,3vw,26px);pointer-events:none;z-index:4}
   .mark{display:flex;align-items:center;gap:9px;letter-spacing:.28em;text-transform:uppercase;font-size:12px}
@@ -47,14 +47,14 @@
   window.addEventListener('resize',resize);
   function layout(){ pads=[]; var cx=W/2,cy=H/2+10,R=Math.min(W,H)*0.30,pr=Math.max(34,Math.min(W,H)*0.085); for(var i=0;i<N;i++){ var a=-Math.PI/2+i*(6.2832/N); pads.push({x:cx+Math.cos(a)*R,y:cy+Math.sin(a)*R,r:pr,hue:hues[i],freq:freqs[i],lit:0}); } }
   var AC=null;
-  function tone(i,dur){ try{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); var o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime; o.frequency.value=pads[i].freq;o.type='triangle'; g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.25,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.45)); o.connect(g);g.connect(AC.destination);o.start();o.stop(t+(dur||0.45)+0.05); }catch(e){} }
+  function tone(i,dur){ try{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();try{AC.resume();}catch(_e){}; var o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime; o.frequency.value=pads[i].freq;o.type='triangle'; g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.25,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.45)); o.connect(g);g.connect(AC.destination);o.start();o.stop(t+(dur||0.45)+0.05); }catch(e){} }
   function fire(i){ pads[i].lit=1; ripples.push({x:pads[i].x,y:pads[i].y,r:pads[i].r,life:0,max:900,hue:pads[i].hue}); tone(i); }
   function newGame(){ seq=[];inputIdx=0;state='show';roundEl.textContent='0';bannerEl.classList.remove('on'); addStep(); }
   function addStep(){ seq.push(Math.random()*N|0); roundEl.textContent=seq.length; inputIdx=0; state='show'; showI=0; showT=performance.now()+500; goalEl.textContent='Watch the melody…'; }
   function gameOver(){ state='over'; var reached=seq.length-1; if(reached>best){best=reached;bestEl.textContent=best;try{localStorage.setItem('versatile:echo:best',best);}catch(e){}} bannerEl.textContent='Missed · round '+reached; bannerEl.classList.add('on'); goalEl.textContent='Tap Start to try again'; }
   function tap(x,y){ if(state!=='input')return; for(var i=0;i<pads.length;i++){ var dx=pads[i].x-x,dy=pads[i].y-y; if(dx*dx+dy*dy<=pads[i].r*pads[i].r){ fire(i); if(i===seq[inputIdx]){ inputIdx++; if(inputIdx>=seq.length){ state='ok'; goalEl.textContent='Nice'; setTimeout(addStep,700); } } else { gameOver(); } return; } } }
-  cv.addEventListener('pointerdown',function(e){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e2){}} var r=cv.getBoundingClientRect(); tap(e.clientX-r.left,e.clientY-r.top); });
-  document.getElementById('startb').addEventListener('click',function(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e2){}} newGame(); });
+  cv.addEventListener('pointerdown',function(e){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();try{AC.resume();}catch(_e){};}catch(e2){}} var r=cv.getBoundingClientRect(); tap(e.clientX-r.left,e.clientY-r.top); });
+  document.getElementById('startb').addEventListener('click',function(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();try{AC.resume();}catch(_e){};}catch(e2){}} newGame(); });
   function frame(t){
     if(state==='show'){ if(t>=showT){ if(showI<seq.length){ fire(seq[showI]); showI++; showT=t+620; } else { state='input';inputIdx=0;goalEl.textContent='Your turn — echo it back'; } } }
     ctx.fillStyle='#05080a';ctx.fillRect(0,0,W,H); var i;

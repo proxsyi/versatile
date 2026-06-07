@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Wisp — Versatile</title>
 <meta name="description" content="Guide a spark of light through a dark maze to the ember. Each maze you solve, the next grows.">
@@ -12,7 +12,7 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--bg:#07080a;--ink:#ece8dc;--muted:#8b8e87;--accent:#90e0c0;--ember:#ff8a3c;--line:rgba(236,232,220,.16)}
   html,body{height:100%}
-  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;overflow:hidden;position:fixed;inset:0;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   #c{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
   .hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:14px clamp(14px,3vw,26px);pointer-events:none;z-index:4}
   .mark{display:flex;align-items:center;gap:9px;letter-spacing:.28em;text-transform:uppercase;font-size:12px}
@@ -58,8 +58,8 @@
     }
   }
   function newMaze(n){ level=n;lvlEl.textContent=n; cols=Math.min(7+n,22);rows=Math.min(7+n,22); gen(); cell=0;targetCell=0;moving=false;won=false; fit(); wisp.x=cellCX(0);wisp.y=cellCY(0); startT=performance.now(); bannerEl.classList.remove('on');goalEl.style.opacity='1'; }
-  var AC=null; function blip(f){ try{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); var o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);o.connect(g);g.connect(AC.destination);o.start();o.stop(t+0.2);}catch(e){} }
-  function tryMove(dir){ if(won||moving)return; var c=cell,cxx=c%cols,cyy=(c/cols)|0,nc=-1; if(dir==='n'&&!cells[c].n&&cyy>0)nc=c-cols; else if(dir==='s'&&!cells[c].s&&cyy<rows-1)nc=c+cols; else if(dir==='e'&&!cells[c].e&&cxx<cols-1)nc=c+1; else if(dir==='w'&&!cells[c].w&&cxx>0)nc=c-1; if(nc<0)return; cell=nc;targetCell=nc;moving=true; if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} blip(360+Math.random()*80); }
+  var AC=null; function blip(f){ try{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();try{AC.resume();}catch(_e){}; var o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);o.connect(g);g.connect(AC.destination);o.start();o.stop(t+0.2);}catch(e){} }
+  function tryMove(dir){ if(won||moving)return; var c=cell,cxx=c%cols,cyy=(c/cols)|0,nc=-1; if(dir==='n'&&!cells[c].n&&cyy>0)nc=c-cols; else if(dir==='s'&&!cells[c].s&&cyy<rows-1)nc=c+cols; else if(dir==='e'&&!cells[c].e&&cxx<cols-1)nc=c+1; else if(dir==='w'&&!cells[c].w&&cxx>0)nc=c-1; if(nc<0)return; cell=nc;targetCell=nc;moving=true; if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();try{AC.resume();}catch(_e){};}catch(e){}} blip(360+Math.random()*80); }
   window.addEventListener('keydown',function(e){ var k=e.key; if(k==='ArrowUp'||k==='w'){tryMove('n');e.preventDefault();} else if(k==='ArrowDown'||k==='s'){tryMove('s');e.preventDefault();} else if(k==='ArrowLeft'||k==='a'){tryMove('w');e.preventDefault();} else if(k==='ArrowRight'||k==='d'){tryMove('e');e.preventDefault();} });
   var sx=0,sy=0,sActive=false;
   cv.addEventListener('pointerdown',function(e){ var r=cv.getBoundingClientRect();sx=e.clientX-r.left;sy=e.clientY-r.top;sActive=true; });
