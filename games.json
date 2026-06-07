@@ -1,11 +1,11 @@
 {
-  "generated": "2026-06-07T02:51:39.119Z",
+  "generated": "2026-06-07T03:22:10.970Z",
   "machines": [
     {
       "slug": "constellation",
       "title": "Constellation",
       "tag": "game",
-      "blurb": "Connect the numbered stars in order to trace each constellation. Finish a sky and the next one grows by a star — how far can you reach?",
+      "blurb": "A drifting field of stars. Draw lines between them, star by star, until the whole sky is joined into one constellation — then a larger sky appears.",
       "path": "games/constellation/",
       "accent": "#e7b84b",
       "motif": "constellation",
@@ -60,6 +60,16 @@
       "accent": "#90e0c0",
       "motif": "maze",
       "order": 6
+    },
+    {
+      "slug": "prism",
+      "title": "Prism",
+      "tag": "game",
+      "blurb": "A beam of light, a grid of crystals, and a handful of mirrors. Bend the beam so it passes through every crystal at once — each puzzle you solve, the next grows.",
+      "path": "games/prism/",
+      "accent": "#cde85a",
+      "motif": "beam",
+      "order": 7
     }
   ]
 }

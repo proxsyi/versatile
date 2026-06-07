@@ -1,7 +1,7 @@
 {
   "title": "Constellation",
   "tag": "game",
-  "blurb": "Connect the numbered stars in order to trace each constellation. Finish a sky and the next one grows by a star — how far can you reach?",
+  "blurb": "A drifting field of stars. Draw lines between them, star by star, until the whole sky is joined into one constellation — then a larger sky appears.",
   "accent": "#e7b84b",
   "motif": "constellation",
   "order": 1
