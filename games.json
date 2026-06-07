@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-06T23:20:35.351Z",
+  "generated": "2026-06-07T00:35:41.646Z",
   "machines": [
     {
       "slug": "constellation",
@@ -30,6 +30,25 @@
       "accent": "#6fd6c4",
       "motif": "ripples",
       "order": 3
+    },
+    {
+      "slug": "skein",
+      "title": "Skein",
+      "tag": "puzzle",
+      "blurb": "A tangle of threads and knots. Drag the knots until nothing crosses — every board can be made calm.",
+      "path": "games/skein/",
+      "accent": "#b79cff",
+      "motif": "weave",
+      "order": 4
+    },
+    {
+      "slug": "embers",
+      "title": "Embers",
+      "tag": "toy · photo",
+      "blurb": "Drop in any photo. It finds the outline, you tweak it, then a storm of embers swarms in to draw it in fire.",
+      "path": "games/embers/",
+      "accent": "#ff5a36",
+      "order": 5
     }
   ]
 }

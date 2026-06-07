@@ -154,31 +154,55 @@ footer{margin-top:54px;display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:
   var DEFAULT={machines:[
     {slug:'constellation',title:'Constellation',tag:'toy · sound',blurb:'Plant points of light. Watch them drift, find each other, and wire themselves together.',path:'games/constellation/',accent:'#e7b84b',motif:'constellation',year:'2026'},
     {slug:'orbit',title:'Orbit',tag:'sandbox',blurb:'Slingshot little worlds around a star and watch them fall into orbit. Pure gravity, no rules.',path:'games/orbit/',accent:'#7fb2ff',motif:'orbit',year:'2026'},
-    {slug:'ripples',title:'Ripples',tag:'toy · sound',blurb:'Tap the dark and it answers — rings spread out and ring a note. Higher up sings higher.',path:'games/ripples/',accent:'#6fd6c4',motif:'ripples',year:'2026'}
+    {slug:'ripples',title:'Ripples',tag:'toy · sound',blurb:'Tap the dark and it answers — rings spread out and ring a note. Higher up sings higher.',path:'games/ripples/',accent:'#6fd6c4',motif:'ripples',year:'2026'},
+    {slug:'skein',title:'Skein',tag:'puzzle',blurb:'A tangle of threads and knots. Drag the knots until nothing crosses — every board can be made calm.',path:'games/skein/',accent:'#b79cff',motif:'weave',year:'2026'}
   ]};
 
   var shelf=document.getElementById('shelf'),metaEl=document.getElementById('meta'),footEl=document.getElementById('foot');
 
-  function motifHTML(kind){
-    if(kind==='orbit'){return '<div class="ringo"></div><div class="sun"></div><div class="spin"><div class="planet"></div></div>';}
-    if(kind==='ripples'){var s='';[0,.9,1.8].forEach(function(d){s+='<div class="ring" style="animation-delay:'+d+'s"></div>';});return s;}
-    // constellation (default)
-    var pts=[[22,30],[40,62],[64,38],[78,70],[52,24],[33,78],[70,18]];var h='';
-    pts.forEach(function(p,i){h+='<div class="star" style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:'+(i*0.34)+'s"></div>';});
-    h+='<div class="link" style="left:22%;top:30%;width:30%;transform:rotate(40deg)"></div>';
-    h+='<div class="link" style="left:52%;top:24%;width:26%;transform:rotate(36deg)"></div>';
+  // Deterministic per-game art so ANY dropped-in machine gets a unique preview
+  // with zero config. Seeded from the slug, auto-tinted by the card's accent.
+  function seedFrom(s){var h=2166136261;s=String(s||'x');for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+  function genericMotif(g){
+    var seed=seedFrom(g&&(g.slug||g.title));
+    function rnd(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}
+    var n=4+Math.floor(rnd()*3),pts=[],h='';
+    for(var i=0;i<n;i++)pts.push([14+Math.round(rnd()*70),16+Math.round(rnd()*66)]);
+    for(var j=0;j<pts.length-1;j++){
+      var a=pts[j],b=pts[j+1],dx=b[0]-a[0],dy=b[1]-a[1];
+      var len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
+      h+='<div class="link" style="left:'+a[0]+'%;top:'+a[1]+'%;width:'+len.toFixed(1)+'%;transform:rotate('+ang.toFixed(1)+'deg)"></div>';
+    }
+    pts.forEach(function(p,i){h+='<div class="star" style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:'+(i*0.32).toFixed(2)+'s"></div>';});
     return h;
   }
+  function motifHTML(g){
+    var kind=(g&&g.motif)||'';
+    if(kind==='orbit'){return '<div class="ringo"></div><div class="sun"></div><div class="spin"><div class="planet"></div></div>';}
+    if(kind==='ripples'){var s='';[0,.9,1.8].forEach(function(d){s+='<div class="ring" style="animation-delay:'+d+'s"></div>';});return s;}
+    if(kind==='weave'){var ns=[[28,32],[68,30],[40,72],[76,62],[50,48]],hh='';ns.forEach(function(p,i){hh+='<div class="star" style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:'+(i*0.3)+'s"></div>';});hh+='<div class="link" style="left:28%;top:32%;width:46%;transform:rotate(22deg)"></div>';hh+='<div class="link" style="left:40%;top:72%;width:42%;transform:rotate(-36deg)"></div>';hh+='<div class="link" style="left:50%;top:48%;width:30%;transform:rotate(60deg)"></div>';return hh;}
+    if(kind==='constellation'){
+      var pts=[[22,30],[40,62],[64,38],[78,70],[52,24],[33,78],[70,18]],h='';
+      pts.forEach(function(p,i){h+='<div class="star" style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:'+(i*0.34)+'s"></div>';});
+      h+='<div class="link" style="left:22%;top:30%;width:30%;transform:rotate(40deg)"></div>';
+      h+='<div class="link" style="left:52%;top:24%;width:26%;transform:rotate(36deg)"></div>';
+      return h;
+    }
+    // unknown or unspecified motif -> unique generated art (true drag-and-drop)
+    return genericMotif(g);
+  }
 
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return c==='&'?'&amp;':c==='<'?'&lt;':c==='>'?'&gt;':'&quot;';});}
+  function safeMotif(m){return /^[a-z0-9_-]+$/i.test(m||'')?m:'';}
   function render(list){
     shelf.innerHTML='';
     list.forEach(function(g){
       var b=document.createElement('button');
       b.className='machine';b.style.setProperty('--acc',g.accent||'#d8b25a');
-      b.setAttribute('aria-label','Play '+g.title);
-      b.innerHTML='<div class="screen '+(g.motif||'')+'">'+motifHTML(g.motif)+'</div>'+
-        '<div class="row"><span class="title">'+g.title+'</span><span class="tag">'+(g.tag||'')+'</span></div>'+
-        '<p class="blurb">'+(g.blurb||'')+'</p>'+
+      b.setAttribute('aria-label','Play '+(g.title||'machine'));
+      b.innerHTML='<div class="screen '+safeMotif(g.motif)+'">'+motifHTML(g)+'</div>'+
+        '<div class="row"><span class="title">'+esc(g.title)+'</span><span class="tag">'+esc(g.tag||'')+'</span></div>'+
+        '<p class="blurb">'+esc(g.blurb||'')+'</p>'+
         '<span class="play"><span class="tri"></span>Play</span>';
       b.addEventListener('click',function(){openPlayer(g);});
       shelf.appendChild(b);

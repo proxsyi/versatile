@@ -11,7 +11,7 @@ const path = require("path");
 const ROOT = process.cwd();
 const GAMES = path.join(ROOT, "games");
 const PALETTE = ["#e7b84b", "#7fb2ff", "#6fd6c4", "#ff8a6b", "#b79cff", "#cde85a"];
-const MOTIFS = ["constellation", "orbit", "ripples"];
+const MOTIFS = ["constellation", "orbit", "ripples", "weave"];
 
 function titleCase(s) {
   return s.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
@@ -21,11 +21,21 @@ function hash(s) {
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return h;
 }
+// Parse <meta name="..."> content robustly: order-independent and quote-aware
+// (so apostrophes inside a double-quoted description are not truncated).
 function metaContent(html, name) {
-  const re1 = new RegExp('<meta[^>]*name=["\']' + name + '["\'][^>]*content=["\']([^"\']*)["\']', "i");
-  const re2 = new RegExp('<meta[^>]*content=["\']([^"\']*)["\'][^>]*name=["\']' + name + '["\']', "i");
-  const m = html.match(re1) || html.match(re2);
-  return m ? m[1].trim() : "";
+  const tagRe = /<meta\b[^>]*>/gi;
+  let m;
+  while ((m = tagRe.exec(html))) {
+    const tag = m[0];
+    const nm = tag.match(/\bname\s*=\s*("([^"]*)"|'([^']*)')/i);
+    if (!nm) continue;
+    const nval = nm[2] != null ? nm[2] : nm[3];
+    if (!nval || nval.toLowerCase() !== name.toLowerCase()) continue;
+    const ct = tag.match(/\bcontent\s*=\s*("([^"]*)"|'([^']*)')/i);
+    if (ct) return (ct[2] != null ? ct[2] : ct[3]).trim();
+  }
+  return "";
 }
 function titleTag(html) {
   const m = html.match(/<title>([^<]*)<\/title>/i);
@@ -35,7 +45,7 @@ function readJSON(file) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
   } catch (e) {
-    if (fs.existsSync(file)) console.warn("⚠  Ignoring invalid JSON: " + file + " (" + e.message + ")");
+    if (fs.existsSync(file)) console.warn("\u26a0  Ignoring invalid JSON: " + file + " (" + e.message + ")");
     return null;
   }
 }
@@ -56,7 +66,7 @@ function build() {
     const dir = path.join(GAMES, slug);
     const idx = path.join(dir, "index.html");
     if (!fs.existsSync(idx)) {
-      console.warn("—  skip " + slug + "/ (no index.html)");
+      console.warn("\u2014  skip " + slug + "/ (no index.html)");
       continue;
     }
     const html = fs.readFileSync(idx, "utf8");
@@ -69,7 +79,9 @@ function build() {
       blurb: ov.blurb || metaContent(html, "description") || "",
       path: "games/" + slug + "/",
       accent: ov.accent || PALETTE[h % PALETTE.length],
-      motif: ov.motif || MOTIFS[h % MOTIFS.length],
+      // No motif assigned by default: the hub draws unique generated art per game.
+      // Only set this if a game.json explicitly wants one of the named motifs.
+      motif: ov.motif || "",
       order: ov.order != null ? Number(ov.order) : null,
     });
   }
@@ -87,7 +99,7 @@ function build() {
         path: m.path,
         url: m.url,
         accent: m.accent || PALETTE[hash(m.slug || m.title || "x") % PALETTE.length],
-        motif: m.motif || MOTIFS[hash(m.slug || m.title || "x") % MOTIFS.length],
+        motif: m.motif || "",
         order: m.order != null ? Number(m.order) : null,
       });
     }
@@ -102,12 +114,13 @@ function build() {
   for (const m of machines) {
     if (m.order == null) delete m.order;
     if (m.url == null) delete m.url;
+    if (!m.motif) delete m.motif;
   }
 
   const out = { generated: new Date().toISOString(), machines };
   fs.writeFileSync(path.join(ROOT, "games.json"), JSON.stringify(out, null, 2) + "\n");
-  console.log("Wrote games.json — " + machines.length + " machine(s):");
-  for (const m of machines) console.log("  · " + (m.slug) + "  →  " + m.title + "  [" + m.motif + " " + m.accent + (m.url ? " external" : "") + "]");
+  console.log("Wrote games.json \u2014 " + machines.length + " machine(s):");
+  for (const m of machines) console.log("  \u00b7 " + (m.slug) + "  \u2192  " + m.title + "  [" + m.motif + " " + m.accent + (m.url ? " external" : "") + "]");
 }
 
 build();

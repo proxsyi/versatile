@@ -16,7 +16,8 @@ That's the whole workflow. On push, a GitHub Action scans `games/`, regenerates
 
 - **Card title** comes from `game.json` → then `<title>` → then the folder name.
 - **Blurb** comes from `game.json` → then `<meta name="description">`.
-- **Accent + preview animation** are auto-assigned unless you set them (below).
+- **Accent** is auto-assigned from a palette unless you set it.
+- **Preview animation** is uniquely generated from the slug for every machine — no two look alike, and you never have to draw or register one. Set `motif` only if you want one of the named house animations instead.
 
 ## Customize a machine (optional)
 
@@ -33,7 +34,7 @@ Drop a `games/<slug>/game.json`. Every field is optional:
 }
 ```
 
-- `motif` = the card's mini preview animation: `constellation` | `orbit` | `ripples`.
+- `motif` = use a named house animation instead of the auto-generated one: `constellation` | `orbit` | `ripples` | `weave`. Leave it out to get unique generated art.
 - `accent` = the card's glow color (any hex).
 - `order` = where it sits on the shelf (lower = earlier; unset = alphabetical, after ordered ones).
 
